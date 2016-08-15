@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.kstor.smartcasinha.ControlPanel">
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:text="Quartão"
+        android:textAllCaps="false"
+        android:id="@+id/lightSwitchQuartao"
+        android:onClick="switchQuartao"
+    />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:text="Quartinho"
+        android:textAllCaps="false"
+        android:id="@+id/lightSwitchQuartinho"
+        android:onClick="switchQuartinho"
+    />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:text="Cozinha"
+        android:textAllCaps="false"
+        android:id="@+id/lightSwitchCozinha"
+        android:onClick="switchCozinha"
+    />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:text="Banheirinho"
+        android:textAllCaps="false"
+        android:id="@+id/lightSwitchBanheirinho"
+        android:onClick="switchBanheirinho"
+    />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="80dp"
+        android:text="Informações"
+        android:textAllCaps="false"
+        android:id="@+id/information"
+        android:onClick="showInfo"
+    />
+</LinearLayout>
