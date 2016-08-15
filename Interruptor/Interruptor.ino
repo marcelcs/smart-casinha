@@ -16,7 +16,7 @@ void setup() {
   pinMode(13, OUTPUT);
 
   // config static IP
-  IPAddress ip(192, 168, 1, 101); // where xx is the desired IP Address
+  IPAddress ip(192, 168, 1, 101); // Desired IP Address in the local network
   IPAddress gateway(192, 168, 1, 1); // set gateway to match your network
   Serial.print(F("Setting static ip to : "));
   Serial.println(ip);
