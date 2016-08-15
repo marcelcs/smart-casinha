@@ -47,7 +47,7 @@ public class ControlPanel extends Activity {
     }
 
     public void showInfo(View view) {
+        Toast.makeText(ControlPanel.this, "Exibindo informações", Toast.LENGTH_LONG).show();
         CasinhaInfo.popUp(ControlPanel.this);
-        Toast.makeText(ControlPanel.this, "Exibindo informações", Toast.LENGTH_LONG);
     }
 }
