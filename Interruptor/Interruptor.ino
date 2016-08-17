@@ -8,12 +8,26 @@ WiFiServer server(80);                     // WebServer
 const char* ssid = "<WIFI_HERE>";
 const char* password = "<wifi_password_here>";
 
+int inPin = 2;         // the number of the input pin, from the button 
+int outPin = 13;       // the number of the output pin, to the relay
+
+int state = LOW;      // the current state of the output pin - defaulted to OFF in case of sudden restarts
+
+int reading;           // the current reading from the input pin
+int previous = LOW;    // the previous reading from the input pin
+
+// the follow variables are long's because the time, measured in miliseconds,
+// will quickly become a bigger number than can be stored in an int.
+long moment = 0;         // the last time the output pin was toggled
+long debounce = 150;   // the debounce time, increase if the output flickers
+
 
 void setup() {
 
   Serial.begin(9600);
 
-  pinMode(13, OUTPUT);
+  pinMode(inPin, INPUT);
+  pinMode(outPin, OUTPUT);
 
   // config static IP
   IPAddress ip(192, 168, 1, 101); // Desired IP Address in the local network
@@ -44,6 +58,23 @@ void setup() {
 }
 
 void loop() {
+  reading = digitalRead(inPin);
+
+
+
+  /* Treatment for the Button Control */
+  if (reading == LOW && previous == HIGH && millis() - moment > debounce) {
+    switchState();    // Switch the state of the Relay
+    Serial.println("Switch State!");
+    moment = millis();
+    previous = reading;
+    return;
+  }
+  previous = reading;
+
+
+
+  /* Treatment for the WiFi Control */
   // Check if a client has connected
   WiFiClient client = server.available();
   if (!client) {
@@ -51,7 +82,6 @@ void loop() {
   }
  
   // Wait until the client sends some data
-  //Serial.println("new client");
   while(!client.available()){
     delay(1);
   }
@@ -65,22 +95,36 @@ void loop() {
  
   int value = LOW;
   if (request.indexOf("/SWITCH_STATE") != -1)  {
-    // AQUI VC MUDA O ESTADO DO RELÉ
-    Serial.println("Cheguei aqui");
+    client.println("HTTP/1.1 204 OK");    //Code 204: OK, no body required in response
+    client.println("Content-Type: text/plain");
+    client.println("");
+    switchState();  //Switch the state of the Relay
+    Serial.println("Switch State!");
+    client.println("State Switched");
+  } else {
+    // Return the response
+    client.println("HTTP/1.1 200 OK");  //Code 200: Ok, reponding with an html body
+    client.println("Content-Type: text/html");
+    client.println(""); //  THIS IS IMPORTANT do not forget this one
+    client.println("<!DOCTYPE HTML>");
+    client.println("<html>");
+   
+    client.println("<br><br>");
+    client.println("<a href=\"/SWITCH_STATE\"\"><button>Switch Light State</button></a>");
+    client.println("</html>");
   }
-  // Return the response
-  client.println("HTTP/1.1 200 OK");
-  client.println("Content-Type: text/html");
-  client.println(""); //  do not forget this one
-  client.println("<!DOCTYPE HTML>");
-  client.println("<html>");
- 
-  client.println("<br><br>");
-  client.println("<a href=\"/SWITCH_STATE\"\"><button>Switch Light State</button></a>");
-  client.println("</html>");
  
   delay(1);
   //Serial.println("Client disconnected");
   Serial.println("");
+}
+
+void switchState() {
+    if (state == HIGH)
+      state = LOW;
+    else
+      state = HIGH;
+      
+    digitalWrite(outPin, state);
 }
 
