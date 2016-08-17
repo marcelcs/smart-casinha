@@ -28,6 +28,8 @@ void setup() {
 
   pinMode(inPin, INPUT);
   pinMode(outPin, OUTPUT);
+  
+  digitalWrite(outPin, state); //Defaulted to OFF while we don't have Recovery from EEPROM
 
   // config static IP
   IPAddress ip(192, 168, 1, 101); // Desired IP Address in the local network
@@ -38,12 +40,12 @@ void setup() {
   WiFi.config(ip, gateway, subnet);
 
   WiFi.begin(ssid, password);
-        while (WiFi.status() != WL_CONNECTED) {
-          delay(500);
-          Serial.print(".");
-        }
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
 
-        Serial.println("WiFi conectado");
+  Serial.println("WiFi conectado");
   Serial.println(WiFi.localIP());
 
   server.begin();
