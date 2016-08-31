@@ -1,5 +1,6 @@
 
 #include <ESP8266WiFi.h>
+#include <EEPROM.h>
 #include <Wire.h>
 
 
@@ -8,10 +9,12 @@ WiFiServer server(80);                     // WebServer
 const char* ssid = "<WIFI_HERE>";
 const char* password = "<wifi_password_here>";
 
-int inPin = 2;         // the number of the input pin, from the button 
-int outPin = 13;       // the number of the output pin, to the relay
+int inPin = 2;         // D4 in the NodeMCU, from the button
+int outPin = 5;       // D1 in the NodeMCU, to the relay
+int ledPind = 4;      //D2 in the NodeMCU, to the LED Halo at the button
 
 int state = LOW;      // the current state of the output pin - defaulted to OFF in case of sudden restarts
+int led = HIGH;       // current state of the LED Halo - always oposite of state
 
 int reading;           // the current reading from the input pin
 int previous = LOW;    // the previous reading from the input pin
@@ -28,8 +31,13 @@ void setup() {
 
   pinMode(inPin, INPUT);
   pinMode(outPin, OUTPUT);
-  
-  digitalWrite(outPin, state); //Defaulted to OFF while we don't have Recovery from EEPROM
+
+  EEPROM.begin();
+  state = (EEPROM.read(0)!=0) ? HIGH : LOW;
+  led = (EEPROM.read(0)==0) ? LOW : HIGH;
+  EEPROM.end();
+  digitalWrite(outPin, state);
+  digitalWrite(ledPin, led);
 
   // config static IP
   IPAddress ip(192, 168, 1, 101); // Desired IP Address in the local network
@@ -84,49 +92,53 @@ void loop() {
   }
  
   // Wait until the client sends some data
-  while(!client.available()){
-    delay(1);
-  }
- 
-  // Read the first line of the request
-  String request = client.readStringUntil('\r');
-  Serial.println(request);
-  client.flush();
- 
-  // Match the request
- 
-  int value = LOW;
-  if (request.indexOf("/SWITCH_STATE") != -1)  {
-    client.println("HTTP/1.1 204 OK");    //Code 204: OK, no body required in response
-    client.println("Content-Type: text/plain");
-    client.println("");
-    switchState();  //Switch the state of the Relay
-    Serial.println("Switch State!");
-    client.println("State Switched");
-  } else {
-    // Return the response
-    client.println("HTTP/1.1 200 OK");  //Code 200: Ok, reponding with an html body
-    client.println("Content-Type: text/html");
-    client.println(""); //  THIS IS IMPORTANT do not forget this one
-    client.println("<!DOCTYPE HTML>");
-    client.println("<html>");
+  if (client.available()) {
+    // Read the first line of the request
+    String request = client.readStringUntil('\r');
+    Serial.println(request);
+    client.flush();
    
-    client.println("<br><br>");
-    client.println("<a href=\"/SWITCH_STATE\"\"><button>Switch Light State</button></a>");
-    client.println("</html>");
+    // Match the request
+   
+    int value = LOW;
+    if (request.indexOf("/SWITCH_STATE") != -1)  {
+      client.println("HTTP/1.1 204 OK");    //Code 204: OK, no body required in response
+      client.println("Content-Type: text/plain");
+      client.println("");
+      switchState();  //Switch the state of the Relay
+      Serial.println("Switch State!");
+      client.println("State Switched");
+    } else {
+      // Return the response
+      client.println("HTTP/1.1 200 OK");  //Code 200: Ok, reponding with an html body
+      client.println("Content-Type: text/html");
+      client.println(""); //  THIS IS IMPORTANT do not forget this one
+      client.println("<!DOCTYPE HTML>");
+      client.println("<html>");
+     
+      client.println("<br><br>");
+      client.println("<a href=\"/SWITCH_STATE\"\"><button>Switch Light State</button></a>");
+      client.println("</html>");
+    }
+   
+    delay(1);
+    //Serial.println("Client disconnected");
+    Serial.println("");
   }
- 
-  delay(1);
-  //Serial.println("Client disconnected");
-  Serial.println("");
 }
 
 void switchState() {
-    if (state == HIGH)
-      state = LOW;
-    else
-      state = HIGH;
-      
-    digitalWrite(outPin, state);
+  EEPROM.begin();
+  if (state == HIGH)
+    state = LOW;
+    led = HIGH;
+    EEPROM.write(0,0);
+  else
+    state = HIGH;
+    led = LOW;
+    EEPROM.write(0,1);
+  EEPROM.end();
+    
+  digitalWrite(outPin, state);
+  digitalWrite(ledPin, led);
 }
-
