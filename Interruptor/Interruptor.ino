@@ -1,17 +1,15 @@
-
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 #include <Wire.h>
 
-
 WiFiServer server(80);                     // WebServer
 
-const char* ssid = "<WIFI_HERE>";
-const char* password = "<wifi_password_here>";
+const char* ssid = "<wifi_here>";
+const char* password = "<password_here>";
 
-int inPin = 2;         // D4 in the NodeMCU, from the button
-int outPin = 5;       // D1 in the NodeMCU, to the relay
-int ledPind = 4;      //D2 in the NodeMCU, to the LED Halo at the button
+int inPin = 4;         // D2 in the NodeMCU, from the button
+int outPin = 2;       // D1 in the NodeMCU, to the relay
+int ledPin = 5;       // D4 in the NodeMCU, to the LED Halo
 
 int state = LOW;      // the current state of the output pin - defaulted to OFF in case of sudden restarts
 int led = HIGH;       // current state of the LED Halo - always oposite of state
@@ -31,8 +29,9 @@ void setup() {
 
   pinMode(inPin, INPUT);
   pinMode(outPin, OUTPUT);
+  pinMode(ledPin, OUTPUT);
 
-  EEPROM.begin();
+  EEPROM.begin(8);
   state = (EEPROM.read(0)!=0) ? HIGH : LOW;
   led = (EEPROM.read(0)==0) ? LOW : HIGH;
   EEPROM.end();
@@ -70,9 +69,7 @@ void setup() {
 void loop() {
   reading = digitalRead(inPin);
 
-
-
-  /* Treatment for the Button Control */
+  // Treatment for the Button Control
   if (reading == LOW && previous == HIGH && millis() - moment > debounce) {
     switchState();    // Switch the state of the Relay
     Serial.println("Switch State!");
@@ -84,7 +81,7 @@ void loop() {
 
 
 
-  /* Treatment for the WiFi Control */
+  // Treatment for the WiFi Control
   // Check if a client has connected
   WiFiClient client = server.available();
   if (!client) {
@@ -128,15 +125,16 @@ void loop() {
 }
 
 void switchState() {
-  EEPROM.begin();
-  if (state == HIGH)
+  EEPROM.begin(8);
+  if (state == HIGH) {
     state = LOW;
     led = HIGH;
     EEPROM.write(0,0);
-  else
+  } else {
     state = HIGH;
     led = LOW;
     EEPROM.write(0,1);
+  }
   EEPROM.end();
     
   digitalWrite(outPin, state);
